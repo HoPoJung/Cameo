@@ -122,46 +122,41 @@
   {
     "id": "wav_01",
     "source": "wav",
-    "question": "愛鄉之聲電臺的廣播中，主要討論了哪些主題？",
-    "answer": "【待補充】此題需要完成WAV逐字稿後才能正確回答。請先執行：python scripts/preprocess_wav.py raw/wav/",
-    "expected_keyword": "愛鄉之聲",
-    "difficulty": "medium",
-    "status": "pending_transcription"
+    "question": "愛鄉之聲電臺這集節目的主要內容為何？訪問了哪位來賓？",
+    "answer": "本集節目為台灣本土廣播節目，內容分為兩大部分：（1）開場約9分鐘的台語歌曲與電台介紹；（2）政治談話節目，訪問高雄市大寮-林門地區的市議員候選人余勝福。節目討論余勝福的從政歷程、大寮林門地區的產業結構、農特產、地方議題與選舉情勢。",
+    "expected_keyword": "余勝福",
+    "difficulty": "medium"
   },
   {
     "id": "wav_02",
     "source": "wav",
-    "question": "廣播中提到哪些人名或機構名稱？",
-    "answer": "【待補充】此題需要完成WAV逐字稿後才能正確回答。請先執行：python scripts/preprocess_wav.py raw/wav/",
-    "expected_keyword": "待補充",
-    "difficulty": "medium",
-    "status": "pending_transcription"
+    "question": "廣播中受訪的候選人余勝福，他參選哪個選區的什麼職位？他的從政背景為何？",
+    "answer": "余勝福參選高雄市大寮-林門選區的市議員。他的從政背景：曾擔任高雄市長（金牌市長，推測為陳其邁）的助理，在市長任內接觸選民服務，30歲時決定出來參選，希望將所學和經驗貢獻給大寮林門地區。他在參選前已長期協助市長服務，偶爾接到地方民眾電話並幫忙記錄。",
+    "expected_keyword": "大寮",
+    "difficulty": "medium"
   },
   {
     "id": "wav_03",
     "source": "wav",
-    "question": "廣播的播出時間長度為多少分鐘？使用何種語言播出？",
-    "answer": "廣播長度約60分鐘（3600秒），採8000 Hz取樣率的單聲道音訊（電話語音品質）。播出語言待轉錄後確認，根據電台名稱「愛鄉之聲電臺」推測應為台灣國語或台語廣播。",
-    "expected_keyword": "60分鐘",
-    "difficulty": "easy",
-    "status": "partial"
+    "question": "廣播中提到大寮-林門地區有哪些重要的產業和農特產？",
+    "answer": "根據廣播內容，大寮-林門地區的產業與農特產包括：（1）工業：大發工業區、中油台塑石化廠（林門為石化重鎮的產業聚落）、煙囪多；（2）農業：大寮有甘蔗區（甘苗區）和紅棗，林門有洋蔥，以及林門海港的海鮮（文魚、鯛魚等）；（3）商業：林雲夜市是當地知名指標性夜市，吸引高雄市區及鄰近屏東等地民眾前往。",
+    "expected_keyword": "大發工業區",
+    "difficulty": "hard"
   },
   {
     "id": "wav_04",
     "source": "wav",
-    "question": "廣播中是否有提到政府政策或法規相關內容？若有，請描述主要內容。",
-    "answer": "【待補充】此題需要完成WAV逐字稿後才能正確回答。請先執行：python scripts/preprocess_wav.py raw/wav/",
-    "expected_keyword": "待補充",
-    "difficulty": "hard",
-    "status": "pending_transcription"
+    "question": "廣播中提到的選舉，有哪些政黨參與？各黨候選人是誰？",
+    "answer": "廣播中討論大寮-林門市議員選舉，涉及兩大政黨：（1）民進黨：候選人包括李福廷，節目中提到民進黨在大寮林門有提名候選人；（2）國民黨：也有候選人參選，節目中提到約有15個席次競逐，國民黨也有3個候選人左右。受訪的余勝福為其中一位候選人（黨籍未明確說明）。",
+    "expected_keyword": "民進黨",
+    "difficulty": "medium"
   },
   {
     "id": "wav_05",
     "source": "wav",
-    "question": "廣播中的主持人或受訪者提到了哪些地名？",
-    "answer": "【待補充】此題需要完成WAV逐字稿後才能正確回答。請先執行：python scripts/preprocess_wav.py raw/wav/",
-    "expected_keyword": "待補充",
-    "difficulty": "medium",
-    "status": "pending_transcription"
+    "question": "廣播總長度為多少分鐘？節目尾聲（最後幾分鐘）討論了什麼主題？",
+    "answer": "廣播總長度約60分鐘（1551段，共3600秒）。節目尾聲（約59分鐘後）轉換主題，開始討論「議定感好」相關內容，說明這是一種預先委託信任人員（感好人）在無法自理時代為處理事務的安排，並提到可找相關主持人或信任人員預先規劃。最後幾秒有主持人的日常對話（「唉唷好熱喔，開冷氣，冷氣是吃電怪的」）。",
+    "expected_keyword": "60分鐘",
+    "difficulty": "easy"
   }
 ]

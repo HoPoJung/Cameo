@@ -1,0 +1,3 @@
+# __MACOSX/100Σ╗╜µ¿íµô¼σà¼µûçby bowen/._071_Σ╗ñ_Σ╕╗Σ╗╗σºöσôíµ┤╛Σ╗ñ.pdf
+
+[讀取失敗：Failed to open file '/tmp/cameo_zip_100份模擬公文by bowen/__MACOSX/100Σ╗╜µ¿íµô¼σà¼µûçby bowen/._071_Σ╗ñ_Σ╕╗Σ╗╗σºöσôíµ┤╛Σ╗ñ.pdf'.]

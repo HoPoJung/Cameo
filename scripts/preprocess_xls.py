@@ -34,33 +34,51 @@ AGE_GROUPS = [
 
 
 def parse_sheet(ws) -> list[dict]:
-    """Parse one sheet into list of {region, gender, age_group: value}."""
-    # Find data start row (first row where col0 or col1 = '計')
+    """Parse one sheet into list of {region, gender, age_group: value}.
+
+    XLS structure quirk: each region's rows are ordered (計, 男, 女), but the
+    region name only appears in col0 of the 男 row. The 計 row has an empty
+    col0, so we must buffer it and assign the region once we see the next 男.
+    """
     data_start = 4
     records = []
-    current_region = ""
+    pending_ji = None  # buffers 計 row until region name arrives from next 男
 
     for r in range(data_start, ws.nrows):
         col0 = str(ws.cell_value(r, 0)).strip().replace("　", "").replace(" ", "")
         col1 = str(ws.cell_value(r, 1)).strip()
 
-        if col0:
-            current_region = col0
         if col1 not in ("計", "男", "女"):
             continue
 
         gender = col1
-        # Build record with all age columns (col2 = 總計, col3+ = age groups)
-        row_data = {"地區": current_region, "性別": gender}
         col_names = ["總計"] + AGE_GROUPS[1:ws.ncols - 2]
+        row_vals = {}
         for c in range(2, ws.ncols):
             if c - 2 < len(col_names):
                 val = ws.cell_value(r, c)
                 try:
-                    row_data[col_names[c - 2]] = int(float(val)) if val != "" else 0
+                    row_vals[col_names[c - 2]] = int(float(val)) if val != "" else 0
                 except (ValueError, TypeError):
-                    row_data[col_names[c - 2]] = str(val)
-        records.append(row_data)
+                    row_vals[col_names[c - 2]] = str(val)
+
+        if gender == "計":
+            pending_ji = {"地區": "", "性別": "計", **row_vals}
+        elif gender == "男":
+            region = col0 if col0 else (records[-1]["地區"] if records else "")
+            if pending_ji is not None:
+                pending_ji["地區"] = region
+                records.append(pending_ji)
+                pending_ji = None
+            records.append({"地區": region, "性別": "男", **row_vals})
+        else:  # 女
+            last_region = records[-1]["地區"] if records else ""
+            records.append({"地區": last_region, "性別": "女", **row_vals})
+
+    if pending_ji is not None:
+        pending_ji["地區"] = records[-1]["地區"] if records else ""
+        records.append(pending_ji)
+
     return records
 
 

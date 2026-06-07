@@ -20,14 +20,41 @@ NCHC_BASE_URL = os.environ.get("NCHC_BASE_URL", "https://portal.genai.nchc.org.t
 NCHC_API_KEY  = os.environ.get("NCHC_API_KEY", "")
 MODEL         = os.environ.get("MODEL", "gemma-4-31B-it")
 REFS_DIR      = Path(os.environ.get("REFS_DIR", "skills/cameo-interview/references"))
+IDX_DIR       = Path(os.environ.get("IDX_DIR",  "skills/cameo-interview/chroma_index"))
+TOP_K         = 5
 
 SYSTEM_PROMPT = """你是一個精確的政府資料分析助理。
 你只能根據提供的參考資料來回答問題，不能憑空推測。
 如果資料中找不到答案，請明確說明「資料中未提及」。
 請用繁體中文回答，回答要簡潔精確，並引用來源。"""
 
-# ── Reference loader ──────────────────────────────────────
-def load_references(source: str = "all", max_chars: int = 12000) -> str:
+# ── Vector search (chromadb) ─────────────────────────────
+def _try_vector_search(question: str, source: str) -> str | None:
+    """Returns top-K relevant chunks, or None if index unavailable."""
+    if not IDX_DIR.exists():
+        return None
+    try:
+        import chromadb
+        from chromadb.utils import embedding_functions
+        ef = embedding_functions.DefaultEmbeddingFunction()
+        client = chromadb.PersistentClient(path=str(IDX_DIR))
+        sources = ["pdf", "wav", "xls", "zip"] if source == "all" else [source]
+        snippets = []
+        for src in sources:
+            try:
+                col = client.get_collection(name=src, embedding_function=ef)
+                results = col.query(query_texts=[question], n_results=TOP_K)
+                for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
+                    snippets.append(f"[{src.upper()}｜{meta['file']}]\n{doc}")
+            except Exception:
+                pass
+        return "\n\n---\n\n".join(snippets) if snippets else None
+    except Exception:
+        return None
+
+
+# ── Full-text fallback ────────────────────────────────────
+def _full_text_load(source: str, max_chars: int = 12000) -> str:
     sources = ["pdf", "wav", "xls", "zip"] if source == "all" else [source]
     parts = []
     for src in sources:
@@ -42,6 +69,16 @@ def load_references(source: str = "all", max_chars: int = 12000) -> str:
         combined = combined[:max_chars] + "\n\n...[資料截斷，已顯示前部分]"
     return combined
 
+
+def load_context(question: str, source: str) -> tuple[str, str]:
+    """Returns (context_text, method_used)."""
+    ctx = _try_vector_search(question, source)
+    if ctx:
+        return ctx, "vector"
+    ctx = _full_text_load(source)
+    return ctx, "fulltext"
+
+
 # ── Models ────────────────────────────────────────────────
 class AskRequest(BaseModel):
     question: str
@@ -52,26 +89,28 @@ class AskResponse(BaseModel):
     answer: str
     source_used: str
     model: str
+    retrieval: str  # "vector" | "fulltext"
 
 # ── Routes ────────────────────────────────────────────────
 @app.get("/health")
 def health():
-    return {"status": "ok", "model": MODEL}
+    vector_ready = IDX_DIR.exists()
+    return {"status": "ok", "model": MODEL, "vector_index": vector_ready}
 
 @app.post("/ask", response_model=AskResponse)
 async def ask(req: AskRequest):
     if not NCHC_API_KEY:
         raise HTTPException(status_code=500, detail="NCHC_API_KEY not set")
 
-    refs = load_references(req.source)
-    if not refs:
+    context, method = load_context(req.question, req.source)
+    if not context:
         raise HTTPException(status_code=404, detail=f"No references found for source: {req.source}")
 
     payload = {
         "model": MODEL,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user",   "content": f"參考資料：\n\n{refs}\n\n---\n\n問題：{req.question}"},
+            {"role": "user",   "content": f"參考資料：\n\n{context}\n\n---\n\n問題：{req.question}"},
         ],
         "max_tokens": req.max_tokens,
         "temperature": 0.1,
@@ -90,7 +129,7 @@ async def ask(req: AskRequest):
             raise HTTPException(status_code=resp.status_code, detail=resp.text)
 
     answer = resp.json()["choices"][0]["message"]["content"].strip()
-    return AskResponse(answer=answer, source_used=req.source, model=MODEL)
+    return AskResponse(answer=answer, source_used=req.source, model=MODEL, retrieval=method)
 
 @app.get("/sources")
 def list_sources():

@@ -400,27 +400,34 @@ def slide5(prs):
           size=15, bold=True, color=NAVY)
 
     extensions = [
-        ("RAG 向量搜尋",
-         "只注入最相關段落，大幅減少 Token 用量，提升答題準確率"),
+        ("✓ RAG 向量搜尋（已實作）",
+         "只注入最相關段落，大幅減少 Token 用量，提升答題準確率",
+         GREEN, RGBColor(0xE8,0xF8,0xED)),
+        ("Function Calling / Tool Use",
+         "給 Hermes 工具（search_pdf / search_wav / search_xls / search_zip），由 Gemma 自行決定呼叫哪個",
+         TEAL, LGRAY),
         ("多文件交叉查詢",
-         "同時引用 PDF 卷宗＋XLS 人口資料，回答複合問題"),
-        ("技能包版本管理",
-         "資料更新時自動重新前處理，確保 references 永遠最新"),
+         "同時引用 PDF 卷宗＋XLS 人口資料，回答需跨資料的複合問題",
+         TEAL, LGRAY),
         ("非技術人員友善介面",
-         "包一個簡單 Web UI：輸入問題 → 輸出引用答案"),
+         "包一個簡單 Web UI：輸入問題 → 輸出引用答案，隱藏 API 細節",
+         TEAL, LGRAY),
+        ("技能包版本管理",
+         "資料更新時自動重新前處理，確保 references 與向量索引永遠最新",
+         TEAL, LGRAY),
     ]
-    for i, (title, desc) in enumerate(extensions):
-        ey = Inches(2.2) + i * Inches(1.15)
-        rect(s, Inches(7.0), ey, Inches(5.9), Inches(1.0),
-             fill=LGRAY, line=TEAL)
+    for i, (title, desc, title_color, bg_color) in enumerate(extensions):
+        ey = Inches(2.2) + i * Inches(0.95)
+        rect(s, Inches(7.0), ey, Inches(5.9), Inches(0.85),
+             fill=bg_color, line=title_color)
         txbox(s, title,
-              Inches(7.15), ey + Inches(0.05),
-              Inches(5.6), Inches(0.4),
-              size=15, bold=True, color=TEAL)
+              Inches(7.15), ey + Inches(0.04),
+              Inches(5.6), Inches(0.36),
+              size=14, bold=True, color=title_color)
         txbox(s, desc,
-              Inches(7.15), ey + Inches(0.45),
-              Inches(5.6), Inches(0.45),
-              size=13, color=DGRAY)
+              Inches(7.15), ey + Inches(0.40),
+              Inches(5.6), Inches(0.40),
+              size=12, color=DGRAY)
 
     # 底部
     rect(s, 0, Inches(7.0), W, Inches(0.5), fill=NAVY)

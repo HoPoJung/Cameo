@@ -18,7 +18,9 @@ INDEX_DIR  = Path("skills/cameo-interview/chroma_index")
 CHUNK_SIZE = 600   # 每段約 600 字
 OVERLAP    = 80    # 前後重疊，避免語意切斷
 
-ef = embedding_functions.DefaultEmbeddingFunction()   # all-MiniLM-L6-v2 ONNX，無需 HuggingFace
+ef = embedding_functions.SentenceTransformerEmbeddingFunction(
+    model_name="paraphrase-multilingual-MiniLM-L12-v2"
+)
 
 
 def chunk_text(text: str, size: int = CHUNK_SIZE, overlap: int = OVERLAP) -> list[str]:

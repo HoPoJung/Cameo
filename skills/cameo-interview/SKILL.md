@@ -17,7 +17,7 @@ system_prompt: |
 
 retrieval:
   engine: chromadb
-  embedding_model: all-MiniLM-L6-v2  # chromadb DefaultEmbeddingFunction (ONNX)
+  embedding_model: paraphrase-multilingual-MiniLM-L12-v2  # multilingual SentenceTransformer
   index_path: skills/cameo-interview/chroma_index
   chunk_size: 600
   overlap: 80

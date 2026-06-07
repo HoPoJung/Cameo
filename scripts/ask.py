@@ -31,7 +31,9 @@ SYSTEM_PROMPT = """你是一個精確的政府資料分析助理。
 如果資料中找不到答案，請明確說明「資料中未提及」。
 請用繁體中文回答，回答要簡潔精確，並引用來源。"""
 
-ef = embedding_functions.DefaultEmbeddingFunction()   # all-MiniLM-L6-v2 ONNX
+ef = embedding_functions.SentenceTransformerEmbeddingFunction(
+    model_name="paraphrase-multilingual-MiniLM-L12-v2"
+)
 
 
 def get_client() -> chromadb.PersistentClient:

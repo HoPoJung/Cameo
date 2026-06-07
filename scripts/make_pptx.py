@@ -410,9 +410,9 @@ def slide5(prs):
         ("✓ Railway API 部署（已完成）",
          "/ask + /health + /sources，向量搜尋啟用，fulltext fallback",
          GREEN, RGBColor(0xE8,0xF8,0xED)),
-        ("多語言 Embedding（進行中）",
-         "從英文 all-MiniLM 換成 multilingual-MiniLM-L12-v2，提升中文準確率",
-         ORANGE, RGBColor(0xFF,0xF3,0xE0)),
+        ("✓ 多語言 Embedding（已完成）",
+         "換成 multilingual-MiniLM-L12-v2，bundled 進 repo（Git LFS），Railway 可離線載入",
+         GREEN, RGBColor(0xE8,0xF8,0xED)),
         ("Function Calling / Tool Use",
          "給 Gemma 工具（search_pdf/wav/xls/zip），自行決定呼叫哪個來源",
          TEAL, LGRAY),
@@ -440,6 +440,84 @@ def slide5(prs):
           size=11, color=RGBColor(0xAA,0xCC,0xDD), align=PP_ALIGN.CENTER)
 
 
+# ══════════════════════════════════════════════════════════
+# SLIDE 6 — 驗證歷程：從 8 題到 17 題
+# ══════════════════════════════════════════════════════════
+def slide6(prs):
+    s = blank_slide(prs)
+    header_bar(s, "驗證歷程：從 8 題到 17 題（共 20 題）",
+               "三輪迭代、逐步排雷，最終達成 85% 通過率")
+    accent_bar(s)
+
+    # 迭代歷程表（上方全寬）
+    txbox(s, "📈 三輪迭代過程",
+          Inches(0.4), Inches(1.75), Inches(12.5), Inches(0.38),
+          size=14, bold=True, color=NAVY)
+    add_table(s,
+        ["輪次", "通過", "關鍵問題", "採取的修正"],
+        [
+            ["第 1 輪（初始）",   "8 / 20",
+             "ZIP TOP_K 過小；429 限流；keyword 空格不匹配",
+             "—"],
+            ["第 2 輪（調參後）", "13 / 20",
+             "XLS 縣市資料錯位；WAV QA 來賓名稱有誤；英文 embedding",
+             "ZIP TOP_K 5→15；retry backoff；keyword normalize"],
+            ["第 3 輪（全修後）", "17 / 20",
+             "ZIP 公文 020/050/080 fulltext 截斷",
+             "XLS 前處理 bug 修復；QA 更新；multilingual model bundled"],
+        ],
+        l=Inches(0.4), t=Inches(2.15),
+        w=Inches(12.5), h=Inches(1.6),
+        hdr_fill=NAVY,
+    )
+
+    # 剩餘3題（左下）
+    txbox(s, "❌ 剩餘 3 題未通過原因",
+          Inches(0.4), Inches(3.95), Inches(7.5), Inches(0.38),
+          size=14, bold=True, color=ORANGE)
+    add_table(s,
+        ["題目", "根本原因", "修復路徑"],
+        [
+            ["zip_03（公文020）",
+             "fulltext 12,000字元限制，100份公文第6份即截斷",
+             "重建向量索引 → vector search 直接定位"],
+            ["zip_04（公文050）", "同上", "同上"],
+            ["zip_05（公文080）", "同上", "同上"],
+        ],
+        l=Inches(0.4), t=Inches(4.35),
+        w=Inches(7.5), h=Inches(1.65),
+        hdr_fill=ORANGE,
+    )
+
+    # 最終成績（右下）
+    txbox(s, "🎯 最終成績",
+          Inches(8.2), Inches(3.95), Inches(4.7), Inches(0.38),
+          size=14, bold=True, color=GREEN)
+
+    score_y = Inches(4.35)
+    score_items = [
+        ("PDF：5 / 5", True),
+        ("XLS：5 / 5（縣市錯位修正後）", True),
+        ("WAV：5 / 5（QA 名稱修正後）", True),
+        ("ZIP：2 / 5（001、005 通過）", True),
+        ("ZIP：0 / 3（020、050、080 待索引重建）", False),
+    ]
+    for i, (text, ok) in enumerate(score_items):
+        clr = GREEN if ok else ORANGE
+        prefix = "✓ " if ok else "✗ "
+        txbox(s, prefix + text,
+              Inches(8.2), score_y + i * Inches(0.42),
+              Inches(4.7), Inches(0.4),
+              size=13, bold=ok, color=clr)
+
+    # 總分 badge
+    rect(s, Inches(8.2), Inches(6.45), Inches(4.7), Inches(0.75),
+         fill=NAVY)
+    txbox(s, "17 / 20 = 85%  通過率",
+          Inches(8.2), Inches(6.5), Inches(4.7), Inches(0.65),
+          size=24, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
+
+
 # ── Main ──────────────────────────────────────────────────
 if __name__ == "__main__":
     prs = new_prs()
@@ -448,6 +526,7 @@ if __name__ == "__main__":
     slide3(prs)
     slide4(prs)
     slide5(prs)
+    slide6(prs)
     out = "slides/報告_柏融.pptx"
     prs.save(out)
     print(f"✓ 儲存至 {out}")

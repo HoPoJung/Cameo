@@ -21,7 +21,7 @@ NCHC_API_KEY  = os.environ.get("NCHC_API_KEY", "")
 MODEL         = os.environ.get("MODEL", "gemma-4-31B-it")
 REFS_DIR      = Path(os.environ.get("REFS_DIR", "skills/cameo-interview/references"))
 IDX_DIR       = Path(os.environ.get("IDX_DIR",  "skills/cameo-interview/chroma_index"))
-TOP_K         = 5
+TOP_K         = {"pdf": 5, "wav": 8, "xls": 5, "zip": 15}  # zip 文件多，需要更大召回
 
 SYSTEM_PROMPT = """你是一個精確的政府資料分析助理。
 你只能根據提供的參考資料來回答問題，不能憑空推測。
@@ -43,7 +43,7 @@ def _try_vector_search(question: str, source: str) -> str | None:
         for src in sources:
             try:
                 col = client.get_collection(name=src, embedding_function=ef)
-                results = col.query(query_texts=[question], n_results=TOP_K)
+                results = col.query(query_texts=[question], n_results=TOP_K.get(src, 5))
                 for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
                     snippets.append(f"[{src.upper()}｜{meta['file']}]\n{doc}")
             except Exception:

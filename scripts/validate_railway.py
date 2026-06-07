@@ -4,6 +4,7 @@
 """
 import sys
 import json
+import time
 import argparse
 from pathlib import Path
 
@@ -13,8 +14,16 @@ except ImportError:
     print("請先執行：pip install requests")
     sys.exit(1)
 
-QA_FILE = Path("skills/cameo-interview/qa/all_qa.json")
-DEFAULT_URL = "https://cameo-production.up.railway.app"
+QA_FILE      = Path("skills/cameo-interview/qa/all_qa.json")
+DEFAULT_URL  = "https://cameo-production.up.railway.app"
+SLEEP_SECS   = 3   # 避免 429 Too Many Requests
+
+
+def kw_match(keyword: str, answer: str) -> bool:
+    """關鍵字比對，忽略空格差異（例如「12萬」vs「12 萬」）。"""
+    kw_norm  = keyword.lower().replace(" ", "").replace(" ", "")
+    ans_norm = answer.lower().replace(" ", "").replace(" ", "")
+    return kw_norm in ans_norm
 
 
 def run(base_url: str):
@@ -22,10 +31,10 @@ def run(base_url: str):
     passed, failed, skipped = [], [], []
 
     print(f"目標：{base_url}/ask")
-    print(f"題數：{len(qa_pairs)} 題\n")
+    print(f"題數：{len(qa_pairs)} 題  |  間隔：{SLEEP_SECS}s\n")
     print("=" * 70)
 
-    for item in qa_pairs:
+    for i, item in enumerate(qa_pairs):
         qid = item["id"]
         src = item["source"]
         q   = item["question"]
@@ -36,6 +45,9 @@ def run(base_url: str):
             skipped.append(qid)
             continue
 
+        if i > 0:
+            time.sleep(SLEEP_SECS)
+
         print(f"[{qid}] {q[:55]}...")
 
         try:
@@ -45,15 +57,15 @@ def run(base_url: str):
                 timeout=90,
             )
             resp.raise_for_status()
-            data    = resp.json()
-            answer  = data.get("answer", "")
-            method  = data.get("retrieval", "?")
+            data   = resp.json()
+            answer = data.get("answer", "")
+            method = data.get("retrieval", "?")
         except Exception as e:
             print(f"  ✗ 請求失敗：{e}\n")
             failed.append({"id": qid, "reason": str(e)})
             continue
 
-        ok = (kw.lower() in answer.lower()) if kw and kw != "待補充" else True
+        ok   = kw_match(kw, answer) if kw and kw != "待補充" else True
         mark = "✓" if ok else "✗"
         print(f"  {mark} [{method}] 關鍵字「{kw}」{'找到' if ok else '未找到'}")
         print(f"    答案節錄：{answer[:120]}...")

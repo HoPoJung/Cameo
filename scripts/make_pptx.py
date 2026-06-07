@@ -296,70 +296,72 @@ def slide3(prs):
               size=12, bold=True, color=ORANGE)
 
 # ══════════════════════════════════════════════════════════
-# SLIDE 4 — 自驗 20 題：成功與地雷
+# SLIDE 4 — 自驗 20 題：成功、地雷與部署測試
 # ══════════════════════════════════════════════════════════
 def slide4(prs):
     s = blank_slide(prs)
-    header_bar(s, "自驗 20 題：成功經驗與地雷", "4 資料 × 5 題，全部驗證通過")
+    header_bar(s, "自驗 20 題：成功、地雷與部署測試", "前處理 + Railway 部署 + 向量搜尋調優")
     accent_bar(s)
 
-    # 成功範例表
-    txbox(s, "✅ 成功範例（4 題代表）",
-          Inches(0.4), Inches(1.75), Inches(6.0), Inches(0.4),
-          size=15, bold=True, color=GREEN)
+    # 成功範例表（左上）
+    txbox(s, "✅ 成功範例",
+          Inches(0.4), Inches(1.75), Inches(5.8), Inches(0.35),
+          size=13, bold=True, color=GREEN)
     add_table(s,
         ["來源", "問題", "答案節錄"],
         [
-            ["PDF", "被告帳戶如何遭利用？", "分4筆ATM提領12萬元整"],
-            ["XLS", "新北市總人口多少？",   "4,046,564 人"],
-            ["ZIP", "公文001主旨？",         "核定補助案計 33 件"],
-            ["WAV", "余勝福參選哪裡？",      "大寮-林門市議員"],
+            ["PDF", "被告帳戶如何遭利用？", "ATM 分4筆提領12萬"],
+            ["XLS", "新北市總人口？",        "4,046,564 人"],
+            ["ZIP", "公文001主旨？",          "核定補助案計 33 件"],
+            ["WAV", "余勝福參選哪裡？",       "大寮-林門市議員"],
         ],
-        l=Inches(0.4), t=Inches(2.15),
-        w=Inches(6.0), h=Inches(2.2),
+        l=Inches(0.4), t=Inches(2.12),
+        w=Inches(5.8), h=Inches(1.9),
         hdr_fill=GREEN,
     )
 
-    # 地雷表
-    txbox(s, "⚠️ 踩到的地雷",
-          Inches(6.8), Inches(1.75), Inches(6.1), Inches(0.4),
-          size=15, bold=True, color=ORANGE)
+    # 前處理地雷（右上）
+    txbox(s, "⚠️ 前處理地雷",
+          Inches(6.6), Inches(1.75), Inches(6.3), Inches(0.35),
+          size=13, bold=True, color=ORANGE)
     add_table(s,
         ["地雷", "原因", "解法"],
         [
-            ["PDF 無文字",     "掃描圖片格式",          "加 OCR（Tesseract）"],
-            ["XLS 欄名亂碼",   "合併儲存格導致 Unnamed", "改用 xlrd 逐格"],
-            ["WAV 解碼失敗",   "IMA ADPCM 格式",         "換 soundfile 讀取"],
-            ["模型下載被擋",   "雲端封鎖 HuggingFace",   "改本地執行 Whisper"],
-            ["Prompt 超長",    "100份公文一次全塞",      "動態選相關 references"],
+            ["PDF 無文字",   "掃描圖片格式",           "Tesseract OCR"],
+            ["XLS 欄名亂碼", "合併儲存格→Unnamed",     "xlrd 逐格讀取"],
+            ["WAV 解碼失敗", "IMA ADPCM 格式",          "換 soundfile"],
+            ["模型下載被擋", "雲端封鎖 HuggingFace",    "本地執行 Whisper"],
         ],
-        l=Inches(6.8), t=Inches(2.15),
-        w=Inches(6.1), h=Inches(2.6),
+        l=Inches(6.6), t=Inches(2.12),
+        w=Inches(6.3), h=Inches(1.9),
         hdr_fill=ORANGE,
     )
 
-    # 問答架構示意
-    rect(s, Inches(0.4), Inches(4.55), Inches(12.5), Inches(0.35),
-         fill=TEAL)
-    txbox(s, "問答架構",
-          Inches(0.5), Inches(4.57), Inches(3), Inches(0.3),
-          size=13, bold=True, color=WHITE)
-
-    flow = "問題  →  Hermes 載入 references/  →  組 System Prompt + 問題  →  NCHC Gemma 4 31B  →  引用來源 + 答案"
-    txbox(s, flow,
-          Inches(0.4), Inches(5.0), Inches(12.5), Inches(0.5),
-          size=14, color=NAVY, align=PP_ALIGN.CENTER)
-
-    txbox(s, "規則：只能根據 references/ 回答，找不到就說「資料中未提及」，並引用來源段落",
-          Inches(0.4), Inches(5.55), Inches(12.5), Inches(0.4),
-          size=13, color=RGBColor(0x66,0x66,0x66), align=PP_ALIGN.CENTER)
+    # 部署測試地雷（下方全寬）
+    txbox(s, "🚀 部署測試（Railway）發現的問題",
+          Inches(0.4), Inches(4.15), Inches(12.5), Inches(0.35),
+          size=13, bold=True, color=RGBColor(0x6A,0x1A,0x8A))
+    add_table(s,
+        ["問題", "根本原因", "解法"],
+        [
+            ["Build 失敗：無法偵測語言",   "根目錄無 requirements.txt",    "根目錄加 requirements.txt"],
+            ["Build 失敗：無 start cmd",   "main.py 不在根目錄",           "根目錄加 main.py 引入 app"],
+            ["向量搜尋未啟用（fulltext）", "chromadb 未列入 requirements", "補加 chromadb==1.5.9"],
+            ["ZIP 找不到特定公文編號",      "TOP_K=5 + 100份文件相似度接近", "ZIP TOP_K: 5 → 15"],
+            ["429 Too Many Requests",      "連續請求觸發 NCHC 流量限制",   "Retry + backoff（10/20/40s）"],
+            ["中文答題準確率偏低",          "英文 embedding 模型",          "換多語言 MiniLM-L12-v2"],
+        ],
+        l=Inches(0.4), t=Inches(4.52),
+        w=Inches(12.5), h=Inches(2.65),
+        hdr_fill=RGBColor(0x6A,0x1A,0x8A),
+    )
 
 # ══════════════════════════════════════════════════════════
 # SLIDE 5 — 時間軸與可延伸方向
 # ══════════════════════════════════════════════════════════
 def slide5(prs):
     s = blank_slide(prs)
-    header_bar(s, "時間軸與可延伸方向", "總製作時間約 4 小時")
+    header_bar(s, "時間軸與可延伸方向", "總製作時間約 6 小時（含部署測試）")
     accent_bar(s)
 
     # 時間軸（左半）
@@ -368,12 +370,14 @@ def slide5(prs):
           size=15, bold=True, color=NAVY)
 
     timeline = [
-        ("資料確認＋環境建置",   "~1 hr",   TEAL),
-        ("PDF OCR 前處理",       "~10 min", RGBColor(0x2E,0x7D,0x32)),
-        ("XLS 結構解析（含debug）","~1 hr",  RGBColor(0x6A,0x1A,0x8A)),
-        ("ZIP 批量萃取",          "~5 min",  RGBColor(0x2E,0x7D,0x32)),
-        ("WAV 轉錄（Whisper）",   "~30 min", TEAL),
-        ("20 題 QA 撰寫＋自驗",   "~1 hr",   NAVY),
+        ("資料確認＋環境建置",     "~1 hr",   TEAL),
+        ("PDF OCR 前處理",         "~10 min", RGBColor(0x2E,0x7D,0x32)),
+        ("XLS 結構解析（含debug）", "~1 hr",   RGBColor(0x6A,0x1A,0x8A)),
+        ("ZIP 批量萃取",            "~5 min",  RGBColor(0x2E,0x7D,0x32)),
+        ("WAV 轉錄（Whisper）",     "~30 min", TEAL),
+        ("20 題 QA 撰寫＋自驗",     "~1 hr",   NAVY),
+        ("向量搜尋實作（ChromaDB）", "~1 hr",   TEAL),
+        ("Railway 部署＋除錯",      "~1 hr",   ORANGE),
     ]
     ty = Inches(2.2)
     for i, (label, time, color) in enumerate(timeline):
@@ -389,7 +393,7 @@ def slide5(prs):
 
     rect(s, Inches(0.4), ty + len(timeline)*Inches(0.68),
          Inches(5.5), Pt(2), fill=NAVY)
-    txbox(s, "總計：約 4 小時",
+    txbox(s, "總計：約 6 小時",
           Inches(0.4), ty + len(timeline)*Inches(0.68) + Inches(0.1),
           Inches(5.5), Inches(0.5),
           size=18, bold=True, color=NAVY, align=PP_ALIGN.RIGHT)
@@ -400,20 +404,20 @@ def slide5(prs):
           size=15, bold=True, color=NAVY)
 
     extensions = [
-        ("✓ RAG 向量搜尋（已實作）",
-         "只注入最相關段落，大幅減少 Token 用量，提升答題準確率",
+        ("✓ RAG 向量搜尋（已完成）",
+         "ChromaDB，603 chunks，TOP_K per source，只注入相關段落",
          GREEN, RGBColor(0xE8,0xF8,0xED)),
+        ("✓ Railway API 部署（已完成）",
+         "/ask + /health + /sources，向量搜尋啟用，fulltext fallback",
+         GREEN, RGBColor(0xE8,0xF8,0xED)),
+        ("多語言 Embedding（進行中）",
+         "從英文 all-MiniLM 換成 multilingual-MiniLM-L12-v2，提升中文準確率",
+         ORANGE, RGBColor(0xFF,0xF3,0xE0)),
         ("Function Calling / Tool Use",
-         "給 Hermes 工具（search_pdf / search_wav / search_xls / search_zip），由 Gemma 自行決定呼叫哪個",
+         "給 Gemma 工具（search_pdf/wav/xls/zip），自行決定呼叫哪個來源",
          TEAL, LGRAY),
         ("多文件交叉查詢",
-         "同時引用 PDF 卷宗＋XLS 人口資料，回答需跨資料的複合問題",
-         TEAL, LGRAY),
-        ("非技術人員友善介面",
-         "包一個簡單 Web UI：輸入問題 → 輸出引用答案，隱藏 API 細節",
-         TEAL, LGRAY),
-        ("技能包版本管理",
-         "資料更新時自動重新前處理，確保 references 與向量索引永遠最新",
+         "同時引用 PDF 卷宗＋XLS 人口資料，回答跨來源的複合問題",
          TEAL, LGRAY),
     ]
     for i, (title, desc, title_color, bg_color) in enumerate(extensions):

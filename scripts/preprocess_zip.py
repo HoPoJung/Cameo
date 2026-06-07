@@ -9,12 +9,12 @@ import shutil
 from pathlib import Path
 
 try:
-    import pdfplumber
+    import fitz  # pymupdf
     import docx
     import pandas as pd
     from tabulate import tabulate
 except ImportError:
-    print("請先執行：pip install pdfplumber python-docx openpyxl pandas tabulate")
+    print("請先執行：pip install pymupdf python-docx openpyxl pandas tabulate")
     sys.exit(1)
 
 
@@ -22,10 +22,10 @@ def extract_text_from_file(file_path: Path) -> str:
     suffix = file_path.suffix.lower()
     try:
         if suffix == ".pdf":
-            with pdfplumber.open(file_path) as pdf:
-                return "\n\n".join(
-                    (p.extract_text() or "") for p in pdf.pages
-                ).strip()
+            doc = fitz.open(str(file_path))
+            text = "\n\n".join(page.get_text() for page in doc).strip()
+            doc.close()
+            return text
         elif suffix in (".docx", ".doc"):
             doc = docx.Document(file_path)
             return "\n".join(p.text for p in doc.paragraphs).strip()

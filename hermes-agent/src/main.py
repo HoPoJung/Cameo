@@ -94,7 +94,13 @@ class AskResponse(BaseModel):
 # ── Routes ────────────────────────────────────────────────
 @app.get("/health")
 def health():
-    vector_ready = IDX_DIR.exists()
+    vector_ready = False
+    if IDX_DIR.exists():
+        try:
+            import chromadb  # noqa: F401
+            vector_ready = True
+        except ImportError:
+            pass
     return {"status": "ok", "model": MODEL, "vector_index": vector_ready}
 
 @app.post("/ask", response_model=AskResponse)

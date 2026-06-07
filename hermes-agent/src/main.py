@@ -28,6 +28,26 @@ SYSTEM_PROMPT = """你是一個精確的政府資料分析助理。
 如果資料中找不到答案，請明確說明「資料中未提及」。
 請用繁體中文回答，回答要簡潔精確，並引用來源。"""
 
+# ── Embedding model path (auto-detect bundled local copy) ────
+def _get_embedding_function():
+    """Use local bundled model when available (Railway blocks HuggingFace)."""
+    from chromadb.utils import embedding_functions
+    _model_name = os.environ.get("EMBEDDING_MODEL", "paraphrase-multilingual-MiniLM-L12-v2")
+    # If the env var already points at an absolute path, use it directly.
+    if not os.path.isabs(_model_name):
+        # Resolve relative to repo root: try both CWD-relative and parent-relative
+        for candidate in [
+            Path("models") / _model_name,
+            Path("../models") / _model_name,
+        ]:
+            if candidate.exists():
+                _model_name = str(candidate.resolve())
+                os.environ.setdefault("HF_HUB_OFFLINE", "1")
+                os.environ.setdefault("TRANSFORMERS_OFFLINE", "1")
+                break
+    return embedding_functions.SentenceTransformerEmbeddingFunction(model_name=_model_name)
+
+
 # ── Vector search (chromadb) ─────────────────────────────
 def _try_vector_search(question: str, source: str) -> str | None:
     """Returns top-K relevant chunks, or None if index unavailable."""
@@ -35,10 +55,7 @@ def _try_vector_search(question: str, source: str) -> str | None:
         return None
     try:
         import chromadb
-        from chromadb.utils import embedding_functions
-        ef = embedding_functions.SentenceTransformerEmbeddingFunction(
-            model_name="paraphrase-multilingual-MiniLM-L12-v2"
-        )
+        ef = _get_embedding_function()
         client = chromadb.PersistentClient(path=str(IDX_DIR))
         sources = ["pdf", "wav", "xls", "zip"] if source == "all" else [source]
         snippets = []

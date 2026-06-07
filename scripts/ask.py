@@ -24,7 +24,7 @@ API_KEY  = os.environ.get("NCHC_API_KEY", "sk-9h2h5cqWFN0cptcDdixamg")
 MODEL    = "gemma-4-31B-it"
 IDX_DIR  = Path("skills/cameo-interview/chroma_index")
 QA_DIR   = Path("skills/cameo-interview/qa")
-TOP_K    = 5   # 每個 source 取最相關的 5 段
+TOP_K    = {"pdf": 5, "wav": 8, "xls": 5, "zip": 15}
 
 SYSTEM_PROMPT = """你是一個精確的政府資料分析助理。
 你只能根據提供的參考資料來回答問題，不能憑空推測。
@@ -50,7 +50,7 @@ def vector_search(question: str, source: str = "all") -> str:
     for src in sources:
         try:
             col     = client.get_collection(name=src, embedding_function=ef)
-            results = col.query(query_texts=[question], n_results=TOP_K)
+            results = col.query(query_texts=[question], n_results=TOP_K.get(src, 5))
             for doc, meta in zip(results["documents"][0], results["metadatas"][0]):
                 snippets.append(f"[{src.upper()}｜{meta['file']}]\n{doc}")
         except Exception:

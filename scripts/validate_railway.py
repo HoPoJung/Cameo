@@ -16,7 +16,8 @@ except ImportError:
 
 QA_FILE      = Path("skills/cameo-interview/qa/all_qa.json")
 DEFAULT_URL  = "https://cameo-production.up.railway.app"
-SLEEP_SECS   = 3   # 避免 429 Too Many Requests
+SLEEP_SECS   = 5    # 每題之間的基本間隔
+RETRY_DELAYS = [10, 20, 40]  # 429 時的重試等待秒數
 
 
 def kw_match(keyword: str, answer: str) -> bool:
@@ -50,19 +51,33 @@ def run(base_url: str):
 
         print(f"[{qid}] {q[:55]}...")
 
-        try:
-            resp = requests.post(
-                f"{base_url}/ask",
-                json={"question": q, "source": src},
-                timeout=90,
-            )
-            resp.raise_for_status()
-            data   = resp.json()
-            answer = data.get("answer", "")
-            method = data.get("retrieval", "?")
-        except Exception as e:
-            print(f"  ✗ 請求失敗：{e}\n")
-            failed.append({"id": qid, "reason": str(e)})
+        answer, method = None, "?"
+        last_error = None
+        for attempt, delay in enumerate([0] + RETRY_DELAYS):
+            if delay:
+                print(f"  ⏳ 429，等 {delay}s 後重試（第 {attempt} 次）...")
+                time.sleep(delay)
+            try:
+                resp = requests.post(
+                    f"{base_url}/ask",
+                    json={"question": q, "source": src},
+                    timeout=90,
+                )
+                if resp.status_code == 429:
+                    last_error = f"429 Too Many Requests"
+                    continue
+                resp.raise_for_status()
+                data   = resp.json()
+                answer = data.get("answer", "")
+                method = data.get("retrieval", "?")
+                break
+            except Exception as e:
+                last_error = str(e)
+                break
+
+        if answer is None:
+            print(f"  ✗ 請求失敗：{last_error}\n")
+            failed.append({"id": qid, "reason": last_error})
             continue
 
         ok   = kw_match(kw, answer) if kw and kw != "待補充" else True

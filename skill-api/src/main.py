@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Literal
 
-app = FastAPI(title="Hermes Agent — Cameo Interview")
+app = FastAPI(title="Cameo Skill API — Interview Demo")
 
 app.add_middleware(
     CORSMiddleware,

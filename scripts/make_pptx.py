@@ -174,7 +174,7 @@ def slide1(prs):
               x + Inches(0.1), y + Inches(0.55), bw - Inches(0.2), Inches(0.45),
               size=13, color=RGBColor(0xCC,0xDD,0xEE), align=PP_ALIGN.CENTER)
 
-    txbox(s, "Harness：Hermes Agent  ×  Gemma 4 31B（NCHC API）",
+    txbox(s, "Harness：Cameo Skill API  ×  Gemma 4 31B（NCHC API）",
           Inches(1), Inches(6.6), Inches(11), Inches(0.5),
           size=14, color=TEAL, align=PP_ALIGN.CENTER)
 
